@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Store Report</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }
+            h4 {
+                margin-bottom: 1px;
+                background: #ef9a3e;
+                color: white;
+                text-transform: uppercase;
+                text-align: center;
+                padding-top: 15px;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                margin-top: 30px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                text-align: left;
+                font-size: 12px;
+                background-color: #ef9a3e;
+            }
+
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                text-align: left;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h5>Dear [Recipient]</h5>
+            <p style="background: none; font-size: 13px">
+                Here is Today's Sub-Store Transaction Report, Please Check it out.
+            </p>
+            <h4>
+                Daily Receive Report
+            </h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Requisition No</th>
+                        <th>QTY</th>
+                        <th>Received By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>3456</td>
+                        <td>150</td>
+                        <td>Arzoo</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>3456</td>
+                        <td>150</td>
+                        <td>Arzoo</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>3456</td>
+                        <td>150</td>
+                        <td>Arzoo</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>3456</td>
+                        <td>150</td>
+                        <td>Arzoo</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>3456</td>
+                        <td>150</td>
+                        <td>Arzoo</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <br /><br />
+            <h4>
+                Daily Issue Report
+            </h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Line/Dept</th>
+                        <th>Issue To</th>
+                        <th>Reference</th>
+                        <th>Remarks</th>
+                        <th>QTY</th>
+                        <th>Issue/Delivery By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>Self</td>
+                        <td>Administration</td>
+                        <td>Faisal</td>
+                        <td>56989</td>
+                        <td>For Print</td>
+                        <td>60</td>
+                        <td>Rahat</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>Self</td>
+                        <td>Administration</td>
+                        <td>Faisal</td>
+                        <td>56989</td>
+                        <td>For Print</td>
+                        <td>60</td>
+                        <td>Rahat</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>Self</td>
+                        <td>Administration</td>
+                        <td>Faisal</td>
+                        <td>56989</td>
+                        <td>For Print</td>
+                        <td>60</td>
+                        <td>Rahat</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>Self</td>
+                        <td>Administration</td>
+                        <td>Faisal</td>
+                        <td>56989</td>
+                        <td>For Print</td>
+                        <td>60</td>
+                        <td>Rahat</td>
+                    </tr>
+                    <tr>
+                        <td>2024-05-01</td>
+                        <td>PAPER</td>
+                        <td>Self</td>
+                        <td>Administration</td>
+                        <td>Faisal</td>
+                        <td>56989</td>
+                        <td>For Print</td>
+                        <td>60</td>
+                        <td>Rahat</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br /><br />
+            <h4>
+                Store Summary
+            </h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SL</th>
+                        <th>Item</th>
+                        <th>Unit</th>
+                        <th>Received</th>
+                        <th>Issued</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>PAPER</td>
+                        <td>PKT</td>
+                        <td>40</td>
+                        <td>20</td>
+                        <td>20</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>PAPER</td>
+                        <td>PKT</td>
+                        <td>40</td>
+                        <td>20</td>
+                        <td>20</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>PAPER</td>
+                        <td>PKT</td>
+                        <td>40</td>
+                        <td>20</td>
+                        <td>20</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>PAPER</td>
+                        <td>PKT</td>
+                        <td>40</td>
+                        <td>20</td>
+                        <td>20</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>PAPER</td>
+                        <td>PKT</td>
+                        <td>40</td>
+                        <td>20</td>
+                        <td>20</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>
