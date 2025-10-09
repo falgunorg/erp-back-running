@@ -397,7 +397,7 @@ class RequisitionController extends Controller {
                     $item->recommand_qty = $val->qty;
                     $item->audit_qty = $val->qty;
                     $item->final_qty = $val->qty;
-                    $item->purchase_qty = 0;
+                    $item->purchase_qty = is_null($val->part_id) ? 1 : 0;
                     $item->status = "Listed";
                     $item->remarks = $val->remarks;
                     $item->save();
@@ -461,9 +461,17 @@ class RequisitionController extends Controller {
 
                 $requisition_items = RequisitionItem::where('requisition_id', $requisition->id)->get();
                 foreach ($requisition_items as $val) {
-                    $part = Part::find($val->part_id);
-                    $val->part_name = $part->title;
+                    $part = $val->part_id ? Part::find($val->part_id) : null;
+                    if (!$val->part_id) {
+                        $val->is_service_charge = true;
+                        $val->part_name = 'SERVICE CHARGE';
+                    } else {
+                        $val->is_service_charge = false;
+                        $val->part_name = $part ? $part->title : '';
+                    }
+
                     $val->requisition_number = $requisition->requisition_number;
+
 //                    $val->left_purchase_qty = $val->final_qty - $val->purchase_qty;
 
                     $received = \App\Models\SubStoreReceive::where('requisition_id', $requisition->id)
