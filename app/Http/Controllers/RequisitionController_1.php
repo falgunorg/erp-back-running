@@ -47,7 +47,7 @@ class RequisitionController extends Controller {
             $user = \App\Models\User::find($request->user->id);
 
             // Base query
-            $query = Requisition::query();
+            $query = Requisition::with('items')->query();
             // Own requisition query
             $own_requisition = Requisition::where('user_id', $user->id);
 
@@ -132,10 +132,6 @@ class RequisitionController extends Controller {
                         ->selectRaw('SUM(recommand_qty * rate) as approx_total')
                         ->value('approx_total');
 
-                $total_final_amount = RequisitionItem::where('requisition_id', $val->id)
-                        ->selectRaw('SUM(purchase_qty * final_rate) as final_amount')
-                        ->value('final_amount');
-
                 $total_items = RequisitionItem::where('requisition_id', $val->id)->count();
                 $total_purchesed_items = RequisitionItem::where('requisition_id', $val->id)->whereIn('status', ['Purchased', 'Inhoused'])->count();
                 $total_partial_purchased_items = RequisitionItem::where('requisition_id', $val->id)->where('status', 'Pending')->count();
@@ -145,7 +141,6 @@ class RequisitionController extends Controller {
                 $val->partial_purchased = $total_partial_purchased_items;
                 $val->left_purchase_items = $total_not_purchased;
                 $val->total_approx_amount = $total_approx_amount ?? 0;
-                $val->total_final_amount = $total_final_amount ?? 0;
                 if ($total_items > 0) {
                     $val->purchase_percentage = number_format(($total_purchesed_items / $total_items) * 100, 2);
                     $val->partial_purchase_percentage = number_format(($total_partial_purchased_items / $total_items) * 100, 2);
