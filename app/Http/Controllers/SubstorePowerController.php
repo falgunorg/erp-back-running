@@ -15,132 +15,144 @@ use App\Models\PartRequest;
 
 class SubstorePowerController extends Controller {
 
+//    public function reset_balance_operation(Request $request) {
+//
+//        $subStores = SubStore::with(['receives', 'issues'])->get();
+//
+//        foreach ($subStores as $subStore) {
+//            $totalReceives = $subStore->receives->sum('qty');
+//            $totalIssues = $subStore->issues->sum('qty');
+//
+//            // Calculate opening balance
+//            $openingBalance = $subStore->qty - $totalReceives + $totalIssues;
+//
+//            // Prevent negative opening balance
+//            $subStore->opening_balance = max(0, $openingBalance);
+//
+//            // Optionally, adjust qty if you want current stock to match reality
+//            // $subStore->qty = max(0, $subStore->qty);
+//
+//            $subStore->save();
+//        }
+//    }
+
+    public function reset_balance_operation(Request $request) {
+        $subStores = SubStore::with(['receives', 'issues'])->get();
+
+        foreach ($subStores as $subStore) {
+
+            $totalReceives = $subStore->receives->sum('qty');
+            $totalIssues = $subStore->issues->sum('qty');
+
+            // Calculate normally
+            $openingBalance = $totalIssues - $totalReceives + $subStore->qty;
+
+            // If negative, auto-adjust qty
+            if ($openingBalance < 0) {
+                $adjustment = abs($openingBalance);
+
+                // Increase qty so opening_balance becomes 0
+                $subStore->qty += $adjustment;
+
+                $openingBalance = 0;
+            }
+
+            $subStore->opening_balance = $openingBalance;
+            $subStore->save();
+        }
+    }
+
     public function index(Request $request) {
         try {
             $statusCode = 422;
             $return = [];
+
             $type = $request->input('type');
             $company_id = $request->input('company_id');
             $item_id = $request->input('item_id');
+            $search = $request->input('search');
 
-            $query = SubStore::query();
+            $currentMonth = now()->month;
+            $currentYear = now()->year;
 
-            if ($company_id) {
+            // Base query with eager loading
+            $query = SubStore::with([
+                'part',
+                'company',
+                'receives' => fn($q) => $q->select('id', 'substore_id', 'part_id', 'qty', 'receive_date', 'created_at'),
+                'issues' => fn($q) => $q->select('id', 'substore_id', 'part_id', 'qty', 'issue_date', 'created_at'),
+            ]);
+
+            // Filters
+            if ($company_id)
                 $query->where('company_id', $company_id);
-            }
-            if ($item_id) {
+            if ($item_id)
                 $query->where('id', $item_id);
+            if ($search) {
+                $query->whereHas('part', fn($q) => $q->where('title', 'LIKE', "%{$search}%"));
             }
-
-            // Add search filter
-            if ($request->has('search') && !empty($request->search)) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->whereHas('part', function ($q) use ($search) {
-                        $q->where('title', 'LIKE', "%{$search}%");
-                    });
-                });
-            }
-
-            // Add type filter
             if ($type) {
-                $query->whereHas('part', function ($q) use ($type) {
-                    $q->where('type', $type);
-                });
+                $query->whereHas('part', fn($q) => $q->where('type', $type));
             }
 
             $substores_wo_pagination = $query->get();
-
             $substores = $query->paginate(200);
-            // Current month and year
-            $currentMonth = Carbon::now()->month;
-            $currentYear = Carbon::now()->year;
-            $startOfMonth = Carbon::now()->startOfMonth();
 
-            foreach ($substores as $val) {
-                $part = \App\Models\Part::where('id', $val->part_id)->first();
-                $val->part_name = $part->title;
-                $val->min_balance = $part->min_balance;
-                $val->unit = $part->unit;
-                $val->type = $part->type;
-                $val->image_source = url('') . '/parts/' . $part->photo;
-                $company = \App\Models\Company::where('id', $val->company_id)->first();
-                $val->company = $company->title;
+            foreach ($substores as $substore) {
+                $receives = $substore->receives;
+                $issues = $substore->issues;
 
-                // Calculate total receives and issues
-                $total_receives = SubStoreReceive::where('substore_id', $val->id)->sum('qty');
-                $total_issues = SubStoreIssue::where('substore_id', $val->id)->sum('qty');
-                $val->total_receives = $total_receives;
-                $val->total_issues = $total_issues;
-                $transaction_balance = $total_receives - $total_issues;
-                $opening_startting_bl = $val->qty - $transaction_balance;
-                $val->opening_balance = $val->qty - $transaction_balance;
+                // Total receives & issues
+                $substore->total_receives = $receives->sum('qty');
+                $substore->total_issues = $issues->sum('qty');
 
-                // Calculate opening balance for the current month
-                $total_receives_before_month = SubStoreReceive::where('substore_id', $val->id)
-                        ->where('part_id', $val->part_id)
-                        ->where('created_at', '<', $startOfMonth)
+                // Current month receives & issues
+                $substore->current_month_receives = $receives
+                        ->where('part_id', $substore->part_id)
+                        ->where('created_at', '>=', now()->startOfMonth())
+                        ->where('created_at', '<=', now()->endOfMonth())
                         ->sum('qty');
 
-                $total_issues_before_month = SubStoreIssue::where('substore_id', $val->id)
-                        ->where('part_id', $val->part_id)
-                        ->where('issue_date', '<', $startOfMonth)
+                $substore->current_month_issues = $issues
+                        ->where('part_id', $substore->part_id)
+                        ->where('issue_date', '>=', now()->startOfMonth())
+                        ->where('issue_date', '<=', now()->endOfMonth())
                         ->sum('qty');
 
-                $opening_balance_current_month = $total_receives_before_month - $total_issues_before_month;
+                // Last purchase
+                $last_receive = $receives->where('part_id', $substore->part_id)
+                        ->sortByDesc('created_at')
+                        ->first();
 
-                // Calculate total receives and issues for the current month
-                $total_receives_this_month = SubStoreReceive::where('substore_id', $val->id)
-                        ->where('part_id', $val->part_id)
-                        ->whereYear('created_at', $currentYear)
-                        ->whereMonth('created_at', $currentMonth)
-                        ->sum('qty');
-
-                $total_issues_this_month = SubStoreIssue::where('substore_id', $val->id)
-                        ->where('part_id', $val->part_id)
-                        ->whereYear('issue_date', $currentYear)
-                        ->whereMonth('issue_date', $currentMonth)
-                        ->sum('qty');
-
-                $last_receive = SubStoreReceive::where('part_id', $val->part_id)->latest('created_at')->first();
-
-                if ($last_receive) {
-                    $val->last_purchase_qty = $last_receive->qty;
-                    $val->last_purchase_date = Carbon::parse($last_receive->receive_date)->format('M j, Y');
-                } else {
-                    $val->last_purchase_qty = 'N/A';
-                    $val->last_purchase_date = 'N/A';
-                }
-
-
-
-
-                // Add current month data to the val object
-                $val->current_month_opening_balance = $opening_balance_current_month + $opening_startting_bl;
-                $val->current_month_receives = $total_receives_this_month;
-                $val->current_month_issues = $total_issues_this_month;
-                $val->current_month_total = $total_receives_this_month + $opening_balance_current_month + $opening_startting_bl;
-                $val->current_month_balance = ($total_receives_this_month + $opening_balance_current_month + $opening_startting_bl) - $total_issues_this_month;
+                $substore->last_purchase_qty = $last_receive->qty ?? 'N/A';
+                $substore->last_purchase_date = $last_receive ? Carbon::parse($last_receive->receive_date)->format('M j, Y') : 'N/A';
             }
 
+            // Add part & company info for non-paginated data
+            foreach ($substores_wo_pagination as $substore) {
+                $part = $substore->part;
+                if ($part) {
+                    $substore->part_name = $part->title;
+                    $substore->min_balance = $part->min_balance;
+                    $substore->unit = $part->unit;
+                    $substore->type = $part->type;
+                    $substore->image_source = url('') . '/parts/' . $part->photo;
+                }
 
-            foreach ($substores_wo_pagination as $val) {
-                $part = \App\Models\Part::where('id', $val->part_id)->first();
-                $val->part_name = $part->title;
-                $val->min_balance = $part->min_balance;
-                $val->unit = $part->unit;
-                $val->type = $part->type;
-                $val->image_source = url('') . '/parts/' . $part->photo;
-                $company = \App\Models\Company::where('id', $val->company_id)->first();
-                $val->company = $company->title;
+                $company = $substore->company;
+                $substore->company = $company->title ?? null;
             }
 
             $return['substores'] = $substores;
             $return['substores_wo_pagination'] = $substores_wo_pagination;
             $statusCode = 200;
+
             return $this->response($return, $statusCode);
         } catch (\Throwable $ex) {
-            return $this->error(['status' => 'error', 'main_error_message' => $ex->getMessage()]);
+            return $this->error([
+                        'status' => 'error',
+                        'main_error_message' => $ex->getMessage()
+            ]);
         }
     }
 
@@ -537,5 +549,4 @@ class SubstorePowerController extends Controller {
             return $this->error(['status' => 'error', 'main_error_message' => $ex->getMessage()]);
         }
     }
-
 }

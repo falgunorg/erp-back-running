@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class SubStore extends Model {
 
     protected $table = 'sub_stores';
+    protected $fillable = [
+        'part_id',
+        'company_id',
+        'qty',
+        'opening_balance',
+    ];
 
     public function part() {
         return $this->belongsTo(Part::class, 'part_id');
@@ -24,5 +30,4 @@ class SubStore extends Model {
     public function issues() {
         return $this->hasMany(SubStoreIssue::class, 'substore_id');
     }
-
 }

@@ -133,6 +133,8 @@ Route::middleware(['apiauth'])->group(function () {
 
     // Legacy substores router
     Route::post('/substores', [SubStoreController::class, 'index']);
+    Route::post('/substores-all', [SubStoreController::class, 'all_data']);
+    Route::post('/substores-company-wise', [SubStoreController::class, 'company_wise']);
     Route::post('/substores-pending-receive', [SubStoreController::class, 'pending_receive']);
     Route::post('/substores-receive', [SubStoreController::class, 'receive']);
     Route::post('/substores-receive-undo', [SubStoreController::class, 'receive_undo']);
@@ -292,7 +294,6 @@ Route::middleware(['apiauth'])->group(function () {
 //    Admin Routes 
     Route::post('/admin/costings', [CostingController::class, 'admin_index']);
 
-
     Route::post('/budgets', [BudgetController::class, 'index']);
     Route::post('/public-budgets', [BudgetController::class, 'public_index']);
     Route::post('/budgets-create', [BudgetController::class, 'store']);
@@ -300,8 +301,6 @@ Route::middleware(['apiauth'])->group(function () {
     Route::post('/budgets-update', [BudgetController::class, 'update']);
     Route::post('/budgets-delete', [BudgetController::class, 'destroy']);
     Route::post('/budgets-toggle-status', [BudgetController::class, 'toggleStatus']);
-    
-    
 
     Route::post('/single-budgets-item', [BudgetController::class, 'single_budget_item']);
     Route::post('/budget-items-with-supplier-and-budget', [BudgetController::class, 'budget_items_via_supplier_budget']);
@@ -515,6 +514,8 @@ Route::middleware(['apiauth'])->group(function () {
     Route::get('/file-format', [SettingController::class, 'file_format']);
 
 //    POWER ROUTER
+//    
+    Route::post('/power/reset-balance-operation', [SubstorePowerController::class, 'reset_balance_operation']);
     //subtore power controller
     Route::post('/power/substores', [SubstorePowerController::class, 'index']);
     Route::post('/power/substores/requisitions', [SubstorePowerController::class, 'requisitions']);
